@@ -1,6 +1,5 @@
 
-# 2020-07-06
-# be sure to use the development version
+
 library(daymetr)
 library(Evapotranspiration)
 
@@ -20,13 +19,20 @@ library(zoo)
 library(pbapply)
 
 library(latticeExtra)
+library(tactile)
 library(knitr)
 library(RColorBrewer)
 library(viridis)
 
 library(ragg)
 
-source('local-functions.R')
+# source('local-functions.R')
+
+
+##
+## 2021-04-12: moved all related functionality into sharpshootR, pending 2nd iteration refactoring
+##
+
 
 
 ##
@@ -66,11 +72,11 @@ arf <- SpatialPoints(cbind(-93.97671, 35.09150), proj4string = CRS('+proj=longla
 # 
 # p <- rbind(drummer, pierre)
 # 
-# p <- sierra
+p <- sierra
 
 # p <- centralia
 
-p <- arf
+# p <- arf
 
 ## iteration over coordinates: no buffer
 res <- pblapply(1:length(p), function(i) {
@@ -178,7 +184,8 @@ rs.doy <- do.call('rbind', rs.doy)
 stripe.colors <- colorRampPalette(rev(ms.colors), interpolate = 'spline', space = 'Lab')
 
 levelplot(Pr ~ as.numeric(doy) * series, data=rs.doy, 
-          col.regions=stripe.colors,
+          col.regions = stripe.colors,
+          par.settings = tactile.theme(),
           xlab = 'Day of the Year',
           ylab = '',
           main='Pr(Soil at Field Capacity or Drier)\n1988-2018',
@@ -191,21 +198,25 @@ levelplot(Pr ~ as.numeric(doy) * series, data=rs.doy,
 # tinker with box.ratio
 
 barchart(proportion ~ interval | series, groups = state, 
-                main='Expected Weekly Soil Moisture State\nDAYMET 1988-2018',
-                data = rs.prop, horiz = FALSE, stack = TRUE, xlab = '', ylab='Proportion',
-                as.table=TRUE,
-                box.ratio = 30,
-                key=sK,
-                strip=strip.custom(bg=grey(0.9)),
-                par.strip.text=list(cex=1.25),
-                # layout=c(2,2),
-                scales=list(y=list(alternating=3, cex=1), x=list(draw = FALSE)),
-                par.settings=list(superpose.polygon=list(col=ms.colors, lwd = 1, lend = 1)),
-                # this breaks auto.key, thus requires simpleKey()
-                panel=function(...) {
-                  # panel.abline(h=seq(0, 1, by=0.1), v=1:12, col=grey(0.9))
-                  panel.barchart(...)
-                }
+         main='Expected Weekly Soil Moisture State\nDAYMET 1988-2018',
+         data = rs.prop, horiz = FALSE, stack = TRUE, xlab = '', ylab='Proportion',
+         as.table=TRUE,
+         box.ratio = 30,
+         key=sK,
+         strip=strip.custom(bg=grey(0.9)),
+         par.strip.text=list(cex=1.25),
+         # layout=c(2,2),
+         scales=list(y=list(alternating=3, cex=1), x=list(draw = FALSE)),
+         par.settings = list(
+           superpose.polygon = list(
+             col = ms.colors, lwd = 1, lend = 1
+           )
+         ),
+         # this breaks auto.key, thus requires simpleKey()
+         panel=function(...) {
+           # panel.abline(h=seq(0, 1, by=0.1), v=1:12, col=grey(0.9))
+           panel.barchart(...)
+         }
 )
 
 
@@ -311,18 +322,18 @@ barchart(proportion ~ interval | series, groups = state,
 
 
 
-# # a different take: "on average, when do the soils
-# xyplot(proportion ~ interval | state, groups = series,
-#               subset = state <= 'moist',
-#               main='Expected Soil Moisture State\n1988-2018',
-#               data = rs.prop, type=c('l', 'g'),
-#               xlab = '', ylab='Proportion',
-#               as.table=TRUE,
-#               auto.key=list(lines=TRUE, points=FALSE, columns=4),
-#               strip=strip.custom(bg=grey(0.9)),
-#               par.strip.text=list(cex=1.25),
-#               scales=list(y=list(alternating=3, cex=1), x=list(relation='free', alternating=1, cex=0.85, rot=90)),
-#               par.settings=list(superpose.line=list(col=c('firebrick', 'orange', 'darkgreen', 'royalblue'), lwd = 2, lend = 1))
-# )
+# a different take: "on average, when do the soils
+xyplot(proportion ~ interval | state, groups = series,
+              subset = state <= 'moist',
+              main='Expected Soil Moisture State\n1988-2018',
+              data = rs.prop, type=c('l', 'g'),
+              xlab = '', ylab='Proportion',
+              as.table=TRUE,
+              auto.key=list(lines=TRUE, points=FALSE, columns=4),
+              strip=strip.custom(bg=grey(0.9)),
+              par.strip.text=list(cex=1.25),
+              scales=list(y=list(alternating=3, cex=1), x=list(relation='free', alternating=1, cex=0.85, rot=90)),
+              par.settings=list(superpose.line=list(col=c('firebrick', 'orange', 'darkgreen', 'royalblue'), lwd = 2, lend = 1))
+)
 
 
